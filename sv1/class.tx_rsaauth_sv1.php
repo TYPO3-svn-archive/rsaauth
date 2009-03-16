@@ -24,7 +24,7 @@
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
  *
- * Hint: use extdeveval to insert/update function index above.
+ * $Id$
  */
 
 require_once(PATH_t3lib . 'class.t3lib_svbase.php');
@@ -69,6 +69,17 @@ class tx_rsaauth_sv1 extends t3lib_svbase {
 	protected	$backend;
 
 	/**
+	 * Authenticates a user.
+	 *
+	 * @param	array	$userRecord	User record
+	 * @return	int		Code that shows if user is really authenticated.
+	 * @see	t3lib_userAuth::checkAuthentication()
+	 */
+	public function authUser(array $userRecord) {
+		return 0;
+	}
+
+	/**
 	 * Initializes the service.
 	 *
 	 * @return	boolean
@@ -83,6 +94,33 @@ class tx_rsaauth_sv1 extends t3lib_svbase {
 		}
 
 		return $available;
+	}
+	/**
+	 * Initializes authentication for this service.
+	 *
+	 * @param	string			$subType: Subtype for authentication (either "getUserFE" or "getUserBE")
+	 * @param	array			$loginData: Login data submitted by user and preprocessed by t3lib/class.t3lib_userauth.php
+	 * @param	array			$authenticationInformation: Additional TYPO3 information for authentication services (unused here)
+	 * @param	t3lib_userAuth	$parentObject: Calling object
+	 * @return	void
+	 */
+	public function initAuth($subType, array $loginData, array $authenticationInformation, t3lib_userAuth &$parentObject) {
+		// Store login and authetication data
+//		$this->loginData = $loginData;
+//		$this->authenticationInformation = $authenticationInformation;
+//		$this->parentObject = $parentObject;
+	}
+
+	/**
+	 * This function returns the user record back to the t3lib_userAuth. it does not
+	 * mean that user is authenticated, it means only that user is found. This
+	 * function makes sure that user cannot be authenticated by any other service
+	 * if required by the extension configuration
+	 *
+	 * @return	mixed		User record (content of fe_users/be_users as appropriate for the current mode)
+	 */
+	public function getUser() {
+		return null;
 	}
 
 	/**
