@@ -28,7 +28,7 @@
  * $Id$
  */
 
-require_once(t3lib_extMgm::extPath('rsaauth', 'sv1/backend/class.tx_rsaauth_keypair.php'));
+require_once(t3lib_extMgm::extPath('rsaauth', 'sv1/backends/class.tx_rsaauth_keypair.php'));
 
 /**
  * This class contains an abstract SSL backend for the TYPO3 RSA authentication

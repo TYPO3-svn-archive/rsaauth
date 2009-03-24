@@ -144,8 +144,8 @@ class tx_rsaauth_php_backend extends tx_rsaauth_abstract_backend {
 	 */
 	protected function extractPublicKeyModulus($data) {
 		$fragment = preg_replace('/.*Modulus.*?\n(.*)Exponent:.*/ms', '\1', $data);
-		$fragment = preg_replace('/\s\n:', '', $fragment);
-		$result = strtoupper(substr($fragment, 2));
+		$fragment = preg_replace('/[\s\n\r:]/', '', $fragment);
+		$result = trim(strtoupper(substr($fragment, 2)));
 
 		return $result;
 	}

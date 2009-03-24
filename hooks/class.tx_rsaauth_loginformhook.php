@@ -1,0 +1,121 @@
+<?php
+/***************************************************************
+*  Copyright notice
+*
+*  (c) 2009 Dmitry Dulepov <dmitry@typo3.org>
+*  All rights reserved
+*
+*  This script is part of the TYPO3 project. The TYPO3 project is
+*  free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation; either version 2 of the License, or
+*  (at your option) any later version.
+*
+*  The GNU General Public License can be found at
+*  http://www.gnu.org/copyleft/gpl.html.
+*
+*  This script is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU General Public License for more details.
+*
+*  This copyright notice MUST APPEAR in all copies of the script!
+***************************************************************/
+
+/**
+ * [CLASS/FUNCTION INDEX of SCRIPT]
+ *
+ * $Id$
+ */
+
+require_once(t3lib_extMgm::extPath('rsaauth', 'sv1/storage/class.tx_rsaauth_session_storage.php'));
+
+/**
+ * This class provides a hook to the login form to add extra javascript code
+ * and supply a proper form tag.
+ *
+ * @author	Dmitry Dulepov <dmitry@typo3.org>
+ * @package	TYPO3
+ * @subpackage	tx_rsaauth
+ */
+class tx_rsaauth_loginformhook {
+
+	/**
+	 * Adds RSA-specific JavaScript and returns a form tag
+	 *
+	 * @return	string	Form tag
+	 */
+	public function loginFormHook(array $params, SC_index& $pObj) {
+		$form = null;
+		if ($pObj->loginSecurityLevel == 'rsa') {
+
+			// If we can get the backend, we can proceed
+			$backend = $this->getBackend();
+			if ($backend) {
+
+				// Add javascript
+				$javascriptPath = t3lib_extMgm::siteRelPath('rsaauth') . 'resources/';
+				$files = array(
+					'jsbn/jsbn.js',
+					'jsbn/prng4.js',
+					'jsbn/rng.js',
+					'jsbn/rsa.js',
+					'jsbn/base64.js',
+					'rsaauth.js'
+				);
+
+				$form = '';
+				foreach ($files as $file) {
+					$form .= '<script type="text/javascript" src="/' .
+						$javascriptPath . $file . '"></script>';
+				}
+
+				// Add form tag
+				$form .= '<form action="index.php" method="post" name="loginform" onsubmit="tx_rsaauth_encrypt();">';
+
+				// Generate a new key pair
+				$keyPair = $backend->createNewKeyPair();
+
+				// Save private key
+				$storage = t3lib_div::makeInstance('tx_rsaauth_session_storage');
+				/* @var $storage tx_rsaauth_session_storage */
+				$storage->put($keyPair->getPrivateKey());
+
+				// Add RSA hidden fields
+				$form .= '<input type="hidden" id="rsa_n" name="n" value="' . htmlspecialchars($keyPair->getPublicKey()) . '" />';
+				$form .= '<input type="hidden" id="rsa_e" name="e" value="' . sprintf('%x', $keyPair->getExponent()) . '" />';
+			}
+		}
+		return $form;
+	}
+
+	/**
+	 * Obtains a backend for the RSA encryption
+	 *
+	 * @return	tx_rsaauth_abstract_backend
+	 */
+	protected function getBackend() {
+		$availableBackends = array(
+			'tx_rsaauth_php_backend',
+			'tx_rsaauth_cmdline_backend'
+		);
+		foreach ($availableBackends as $backendClass) {
+			t3lib_div::requireOnce(t3lib_extMgm::extPath('rsaauth', 'sv1/backends/class.' . $backendClass . '.php'));
+
+			$backend = t3lib_div::makeInstance($backendClass);
+			/* @var $backend tx_rsaauth_abstract_backend */
+			if ($backend->isAvailable()) {
+				return $backend;
+			}
+			// Attempt to force destruction of the object
+			unset($backend);
+		}
+		return null;
+	}
+}
+
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rsaauth/hooks/class.tx_rsaauth_loginformhook.php'])	{
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rsaauth/hooks/class.tx_rsaauth_loginformhook.php']);
+}
+
+?>
