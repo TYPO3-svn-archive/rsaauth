@@ -3,6 +3,7 @@
 	* The service is working for BE users
 	* Change priority for the service from 100 to 55
 	* Added core patch to extras/ directory
+	* Fix command line backend for openssl versions with different base64 syntax
 
 2009-03-16  Dmitry Dulepov  <dmitry@typo3.org>
 

@@ -85,7 +85,7 @@ class tx_rsaauth_cmdline_backend extends tx_rsaauth_abstract_backend {
 		// PHP generates 1024 bit key files. We force command line version
 		// to do the same and use the F4 (0x10001) exponent. This is the most
 		// secure.
-		$command = $this->opensslPath . ' genrsa -F4 -out ' .
+		$command = $this->opensslPath . ' genrsa -out ' .
 			escapeshellarg($privateKeyFile) . ' 1024';
 		exec($command);
 
@@ -100,7 +100,7 @@ class tx_rsaauth_cmdline_backend extends tx_rsaauth_abstract_backend {
 				$publicKey = substr($value, 8);
 
 				// Create a result object
-				$result = t3lib_div::makeInstance('tx_rsa_keypair');
+				$result = t3lib_div::makeInstance('tx_rsaauth_keypair');
 				/* @var $result tx_rsa_keypair */
 				$result->setExponent(0x10001);
 				$result->setPrivateKey($privateKey);
@@ -125,11 +125,14 @@ class tx_rsaauth_cmdline_backend extends tx_rsaauth_abstract_backend {
 		$privateKeyFile = tempnam($this->temporaryDirectory, uniqid());
 		file_put_contents($privateKeyFile, $privateKey);
 
+		$dataFile = tempnam($this->temporaryDirectory, uniqid());
+		file_put_contents($dataFile, base64_decode($data));
+
 		// Prepare the command
-		$command = 'echo ' . escapeshellarg($data) . ' | ' .
-			$this->opensslPath . ' base64 -d | ' .
-			$this->opensslPath . ' rsautl -inkey ' .
-			escapeshellarg($privateKeyFile) . ' -decrypt';
+		$command = $this->opensslPath . ' rsautl -inkey ' .
+			escapeshellarg($privateKeyFile) . ' -in ' .
+			escapeshellarg($dataFile) .
+			' -decrypt';
 
 		// Execute the command and capture the result
 		$output = array();
@@ -137,6 +140,7 @@ class tx_rsaauth_cmdline_backend extends tx_rsaauth_abstract_backend {
 
 		// Remove the file
 		@unlink($privateKeyFile);
+		@unlink($dataFile);
 
 		return implode(chr(10), $output);
 	}
