@@ -1,3 +1,7 @@
+2009-04-03  Dmitry Dulepov  <dmitry@typo3.org>
+
+	* The service is working for BE users
+
 2009-03-16  Dmitry Dulepov  <dmitry@typo3.org>
 
 	* Extension is generated and initial work is performed

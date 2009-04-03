@@ -86,7 +86,7 @@ class tx_rsaauth_sv1 extends tx_sv_auth  {
 
 		if ($this->pObj->security_level == 'rsa') {
 
-			$storage = t3lib_div::makeInstance('tx_rsaauth_sesion_storage');
+			$storage = t3lib_div::makeInstance('tx_rsaauth_session_storage');
 
 			// Set failure status by default
 			$result = -1;
@@ -96,18 +96,21 @@ class tx_rsaauth_sv1 extends tx_sv_auth  {
 			$key = $storage->get();
 			if ($key != null && substr($password, 0, 4) == 'rsa:') {
 				// Decode password and pass to parent
-				if ($password != null) {
+				$decryptedPassword = $this->backend->decrypt($key, substr($password, 4));
+				if ($decryptedPassword != null) {
 					// Run the password through the eval function
-					$decryptedPassword = $this->runPasswordEvaluations($password);
+					$decryptedPassword = $this->runPasswordEvaluations($decryptedPassword);
 					if ($decryptedPassword != null) {
 						$this->login['uident'] = $decryptedPassword;
-						$result = parent::authUser($userRecord);
+						if (parent::authUser($userRecord)) {
+							$result = 200;
+						}
 					}
 				}
 				// Reset the password to its original value
 				$this->login['uident'] = $password;
 				// Remove the key
-				$storage->set(null);
+				$storage->put(null);
 			}
 		}
 		return $result;
@@ -123,8 +126,8 @@ class tx_rsaauth_sv1 extends tx_sv_auth  {
 		if ($available) {
 			// Get the backend
 			$this->backend = $this->getBackend();
-			if (!is_null($this->backend)) {
-				$available = true;
+			if (is_null($this->backend)) {
+				$available = false;
 			}
 		}
 

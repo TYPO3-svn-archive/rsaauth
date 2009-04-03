@@ -68,7 +68,7 @@ class tx_rsaauth_php_backend extends tx_rsaauth_abstract_backend {
 			$result = t3lib_div::makeInstance('tx_rsaauth_keypair');
 			/* @var $result tx_rsaauth_keypair */
 			$result->setExponent($exponent);
-			$result->setPrivateKey($privateKey);
+			$result->setPrivateKey($privateKeyStr);
 			$result->setPublicKey($publicKey);
 
 			// Clean up all resources
