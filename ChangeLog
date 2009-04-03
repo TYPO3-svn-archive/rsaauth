@@ -1,6 +1,7 @@
 2009-04-03  Dmitry Dulepov  <dmitry@typo3.org>
 
 	* The service is working for BE users
+	* Change priority for the service from 100 to 55
 
 2009-03-16  Dmitry Dulepov  <dmitry@typo3.org>
 

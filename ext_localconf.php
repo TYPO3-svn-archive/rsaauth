@@ -12,11 +12,11 @@ t3lib_extMgm::addService($_EXTKEY,  'auth' /* sv type */,  'tx_rsaauth_sv1' /* s
 		'subtype' => 'getUserBE,authUserBE',
 
 		'available' => TRUE,
-		'priority' => 100,
-		'quality' => 100,
+		'priority' => 55,	// tx_svauth_sv1 has 50. This service must have higher priority!
+		'quality' => 55,	// tx_svauth_sv1 has 50. This service must have higher quality!
 
 		'os' => '',
-		'exec' => '',
+		'exec' => '',		// Do not put a dependency on openssh here or service loading will fail!
 
 		'classFile' => t3lib_extMgm::extPath($_EXTKEY) . 'sv1/class.tx_rsaauth_sv1.php',
 		'className' => 'tx_rsaauth_sv1',
