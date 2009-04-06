@@ -65,8 +65,17 @@ class tx_rsaauth_cmdline_backend extends tx_rsaauth_abstract_backend {
 	 * @return	void
 	 */
 	public function __construct() {
-		$this->temporaryDirectory = PATH_site . 'typo3temp';
 		$this->opensslPath = t3lib_exec::getCommand('openssl');
+		$this->temporaryDirectory = PATH_site . 'typo3temp';
+
+		// Get temporary directory from the configuration
+		$extconf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['temporaryDirectory']);
+		if ($extconf['temporaryDirectory'] != '' &&
+				$extconf['temporaryDirectory']{0} == '/' &&
+				@is_dir($extconf['temporaryDirectory']) &&
+				is_writable($extconf['temporaryDirectory'])) {
+			$this->temporaryDirectory = $extconf['temporaryDirectory'];
+		}
 	}
 
 	/**

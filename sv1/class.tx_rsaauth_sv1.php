@@ -28,7 +28,7 @@
  */
 
 require_once(t3lib_extMgm::extPath('sv') . 'class.tx_sv_auth.php');
-require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/backends/tx_rsaauth_backendfactory.php');
+require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/backends/class.tx_rsaauth_backendfactory.php');
 require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/storage/class.tx_rsaauth_storagefactory.php');
 
 // Include backends
