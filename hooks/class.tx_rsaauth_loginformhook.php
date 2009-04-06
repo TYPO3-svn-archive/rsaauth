@@ -29,7 +29,7 @@
  */
 
 require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/backends/tx_rsaauth_backendfactory.php');
-require_once(t3lib_extMgm::extPath('rsaauth', 'sv1/storage/class.tx_rsaauth_session_storage.php'));
+require_once(t3lib_extMgm::extPath('rsaauth', 'sv1/storage/class.tx_rsaauth_storagefactory.php'));
 
 /**
  * This class provides a hook to the login form to add extra javascript code
@@ -78,8 +78,8 @@ class tx_rsaauth_loginformhook {
 				$keyPair = $backend->createNewKeyPair();
 
 				// Save private key
-				$storage = t3lib_div::makeInstance('tx_rsaauth_session_storage');
-				/* @var $storage tx_rsaauth_session_storage */
+				$storage = tx_rsaauth_storagefactory::getStorage();
+				/* @var $storage tx_rsaauth_abstract_storage */
 				$storage->put($keyPair->getPrivateKey());
 
 				// Add RSA hidden fields

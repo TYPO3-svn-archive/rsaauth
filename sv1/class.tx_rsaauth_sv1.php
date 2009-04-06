@@ -29,7 +29,7 @@
 
 require_once(t3lib_extMgm::extPath('sv') . 'class.tx_sv_auth.php');
 require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/backends/tx_rsaauth_backendfactory.php');
-require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/storage/class.tx_rsaauth_session_storage.php');
+require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/storage/class.tx_rsaauth_storagefactory.php');
 
 // Include backends
 
@@ -87,7 +87,8 @@ class tx_rsaauth_sv1 extends tx_sv_auth  {
 
 		if ($this->pObj->security_level == 'rsa') {
 
-			$storage = t3lib_div::makeInstance('tx_rsaauth_session_storage');
+			$storage = tx_rsaauth_storagefactory::getStorage();
+			/* @var $storage tx_rsaauth_abstract_storage */
 
 			// Set failure status by default
 			$result = -1;
