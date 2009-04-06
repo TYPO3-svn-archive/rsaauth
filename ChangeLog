@@ -1,5 +1,9 @@
 2009-04-03  Dmitry Dulepov  <dmitry@typo3.org>
 
+	* Added a factory for backends
+
+2009-04-03  Dmitry Dulepov  <dmitry@typo3.org>
+
 	* The service is working for BE users
 	* Change priority for the service from 100 to 55
 	* Added core patch to extras/ directory

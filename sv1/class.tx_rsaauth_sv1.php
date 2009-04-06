@@ -28,6 +28,7 @@
  */
 
 require_once(t3lib_extMgm::extPath('sv') . 'class.tx_sv_auth.php');
+require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/backends/tx_rsaauth_backendfactory.php');
 require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/storage/class.tx_rsaauth_session_storage.php');
 
 // Include backends
@@ -46,6 +47,20 @@ require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/storage/class.tx_rsaauth_se
 class tx_rsaauth_sv1 extends tx_sv_auth  {
 
 	/**
+	 * An RSA backend.
+	 *
+	 * @var	tx_rsaauth_abstract_backend
+	 */
+	protected	$backend = null;
+
+	/**
+	 * Standard extension key for the service
+	 *
+	 * @var	string
+	 */
+	public	$extKey = 'rsaauth';	// The extension key.
+
+	/**
 	 * Standard prefix id for the service
 	 *
 	 * @var	string
@@ -58,20 +73,6 @@ class tx_rsaauth_sv1 extends tx_sv_auth  {
 	 * @var	string
 	 */
 	public	$scriptRelPath = 'sv1/class.tx_rsaauth_sv1.php';	// Path to this script relative to the extension dir.
-
-	/**
-	 * Standard extension key for the service
-	 *
-	 * @var	string
-	 */
-	public	$extKey = 'rsaauth';	// The extension key.
-
-	/**
-	 * An RSA backend.
-	 *
-	 * @var	tx_rsaauth_abstract_backend
-	 */
-	protected	$backend = null;
 
 	/**
 	 * Authenticates a user. The function decrypts the password, runs evaluations
@@ -125,39 +126,13 @@ class tx_rsaauth_sv1 extends tx_sv_auth  {
 		$available = parent::init();
 		if ($available) {
 			// Get the backend
-			$this->backend = $this->getBackend();
+			$this->backend = tx_rsaauth_backendfactory::getBackend();
 			if (is_null($this->backend)) {
 				$available = false;
 			}
 		}
 
 		return $available;
-	}
-
-	/**
-	 * Obtains the RSA backend.
-	 *
-	 * @return	tx_rsa_abstract_backend	An RSA backend or null
-	 */
-	protected function getBackend() {
-		// In future we could allow other backends by having this array as static or global
-		$availableBackends = array(
-			'tx_rsaauth_php_backend',
-			'tx_rsaauth_cmdline_backend'
-		);
-		foreach ($availableBackends as $backendClass) {
-			t3lib_div::requireOnce(t3lib_extMgm::extPath($this->extKey, 'sv1/backends/class.' . $backendClass . '.php'));
-
-			$backend = t3lib_div::makeInstance($backendClass);
-			/* @var $backend tx_rsaauth_abstract_backend */
-			if ($backend->isAvailable()) {
-				return $backend;
-			}
-			// Attempt to force destruction of the object
-			unset($backend);
-		}
-
-		return null;
 	}
 
 	/**

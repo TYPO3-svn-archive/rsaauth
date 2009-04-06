@@ -28,6 +28,7 @@
  * $Id$
  */
 
+require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/backends/tx_rsaauth_backendfactory.php');
 require_once(t3lib_extMgm::extPath('rsaauth', 'sv1/storage/class.tx_rsaauth_session_storage.php'));
 
 /**
@@ -50,8 +51,8 @@ class tx_rsaauth_loginformhook {
 		if ($pObj->loginSecurityLevel == 'rsa') {
 
 			// If we can get the backend, we can proceed
-			$backend = $this->getBackend();
-			if ($backend) {
+			$backend = tx_rsaauth_backendfactory::getBackend();
+			if (!is_null($backend)) {
 
 				// Add javascript
 				$javascriptPath = t3lib_extMgm::siteRelPath('rsaauth') . 'resources/';
@@ -87,30 +88,6 @@ class tx_rsaauth_loginformhook {
 			}
 		}
 		return $form;
-	}
-
-	/**
-	 * Obtains a backend for the RSA encryption
-	 *
-	 * @return	tx_rsaauth_abstract_backend
-	 */
-	protected function getBackend() {
-		$availableBackends = array(
-			'tx_rsaauth_php_backend',
-			'tx_rsaauth_cmdline_backend'
-		);
-		foreach ($availableBackends as $backendClass) {
-			t3lib_div::requireOnce(t3lib_extMgm::extPath('rsaauth', 'sv1/backends/class.' . $backendClass . '.php'));
-
-			$backend = t3lib_div::makeInstance($backendClass);
-			/* @var $backend tx_rsaauth_abstract_backend */
-			if ($backend->isAvailable()) {
-				return $backend;
-			}
-			// Attempt to force destruction of the object
-			unset($backend);
-		}
-		return null;
 	}
 }
 
