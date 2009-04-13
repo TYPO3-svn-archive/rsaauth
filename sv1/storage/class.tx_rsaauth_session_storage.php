@@ -31,7 +31,11 @@
 require_once(t3lib_extMgm::extPath('rsaauth', 'sv1/storage/class.tx_rsaauth_abstract_storage.php'));
 
 /**
- * This class contains a session-based storage for private keys
+ * This class contains a session-based storage for private keys. This storage
+ * is not secure enough because its implementation stores keys completely in the
+ * PHP sessions. PHP sessions usually store data in the file system and it is
+ * easy to extract. This storage is useful only as an example. It is better to
+ * use "split" storage for keys.
  *
  * @author	Dmitry Dulepov <dmitry@typo3.org>
  * @package	TYPO3

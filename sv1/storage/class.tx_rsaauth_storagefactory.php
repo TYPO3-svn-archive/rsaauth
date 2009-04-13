@@ -46,7 +46,7 @@ class tx_rsaauth_storagefactory {
 	 *
 	 * @var	array
 	 */
-	static protected $preferredStorage = 'EXT:rsaauth/sv1/storage/class.tx_rsaauth_session_storage.php:tx_rsaauth_session_storage';
+	static protected $preferredStorage = 'EXT:rsaauth/sv1/storage/class.tx_rsaauth_split_storage.php:tx_rsaauth_split_storage';
 
 	/**
 	 * An instance of the storage. This member is set in the getStorage() function.

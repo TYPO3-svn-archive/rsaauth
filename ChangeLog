@@ -1,3 +1,7 @@
+2009-04-13  Dmitry Dulepov  <dmitry@typo3.org>
+
+	* Added a "split" storage for keys
+
 2009-04-03  Dmitry Dulepov  <dmitry@typo3.org>
 
 	* Added a factory for backends
