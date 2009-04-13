@@ -1,6 +1,7 @@
 2009-04-13  Dmitry Dulepov  <dmitry@typo3.org>
 
 	* Added a "split" storage for keys
+	* Fix XCLASS definitions
 
 2009-04-03  Dmitry Dulepov  <dmitry@typo3.org>
 
