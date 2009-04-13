@@ -2,6 +2,7 @@
 
 	* Added a "split" storage for keys
 	* Fix XCLASS definitions
+	* Added FE authentication
 
 2009-04-03  Dmitry Dulepov  <dmitry@typo3.org>
 

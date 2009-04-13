@@ -1,6 +1,6 @@
 Index: t3lib/class.t3lib_beuserauth.php
 ===================================================================
---- t3lib/class.t3lib_beuserauth.php	(revision 5219)
+--- t3lib/class.t3lib_beuserauth.php	(revision 5312)
 +++ t3lib/class.t3lib_beuserauth.php	(working copy)
 @@ -96,7 +96,6 @@
  	var $formfield_uident = 'userident'; 		// formfield with password
@@ -29,9 +29,36 @@ Index: t3lib/class.t3lib_beuserauth.php
  	 * If flag is set and the extensions 'beuser_tracking' is loaded, this will insert a table row with the REQUEST_URI of current script - thus tracking the scripts the backend users uses...
  	 * This function works ONLY with the "beuser_tracking" extension and is deprecated since it does nothing useful.
  	 *
+Index: t3lib/class.t3lib_userauth.php
+===================================================================
+--- t3lib/class.t3lib_userauth.php	(revision 5312)
++++ t3lib/class.t3lib_userauth.php	(working copy)
+@@ -199,7 +199,13 @@
+ 		$this->loginType = ($this->name=='fe_typo_user') ? 'FE' : 'BE';
+ 
+ 			// set level to normal if not already set
+-		$this->security_level = $this->security_level ? $this->security_level : 'normal';
++		if (!$this->security_level) {
++			// Note: we use 'TYPO3_MODE' here because this is what $TYPO3_CONF_VARS uses
++			$this->security_level = trim($TYPO3_CONF_VARS[TYPO3_MODE]['loginSecurityLevel']);
++			if (!$this->security_level) {
++				$this->security_level = 'normal';
++			}
++		}
+ 
+ 			// enable dev logging if set
+ 		if ($TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_userauth.php']['writeDevLog']) $this->writeDevLog = TRUE;
+@@ -332,6 +338,7 @@
+ 		if ((rand()%100) <= $this->gc_probability)	{
+ 			$this->gc();
+ 		}
++
+ 	}
+ 
+ 	/**
 Index: typo3/index.php
 ===================================================================
---- typo3/index.php	(revision 5219)
+--- typo3/index.php	(revision 5312)
 +++ typo3/index.php	(working copy)
 @@ -355,7 +355,7 @@
  		if ($BE_USER->user['uid'] && ($this->commandLI || $this->loginRefresh || !$this->interfaceSelector))	{

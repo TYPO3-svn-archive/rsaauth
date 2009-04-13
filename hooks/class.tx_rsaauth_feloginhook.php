@@ -25,36 +25,35 @@
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
  *
- * $Id$
+ * $Id: $
  */
 
 require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/backends/class.tx_rsaauth_backendfactory.php');
-require_once(t3lib_extMgm::extPath('rsaauth', 'sv1/storage/class.tx_rsaauth_storagefactory.php'));
+require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/backends/class.tx_rsaauth_storagefactory.php');
 
 /**
- * This class provides a hook to the login form to add extra javascript code
- * and supply a proper form tag.
+ * This class contains a hook to implement RSA authentication for the TYPO3
+ * Frontend. Warning: felogin must be USER_INT for this to work!
  *
  * @author	Dmitry Dulepov <dmitry@typo3.org>
  * @package	TYPO3
  * @subpackage	tx_rsaauth
  */
-class tx_rsaauth_loginformhook {
+class tx_rsaauth_feloginhook {
 
 	/**
-	 * Adds RSA-specific JavaScript and returns a form tag
+	 * Hooks to the felogin extension to provide additional code for FE login
 	 *
-	 * @return	string	Form tag
+	 * @return	array	0 => onSubmit function, 1 => extra fields and required files
 	 */
-	public function loginFormHook(array $params, SC_index& $pObj) {
-		$form = null;
-		if ($pObj->loginSecurityLevel == 'rsa') {
+	public function loginFormHook() {
+		$result = array(0 => '', 1 => '');
 
-			// If we can get the backend, we can proceed
+		if ($GLOBALS['TYPO3_CONF_VARS']['FE']['loginSecurityLevel']) {
 			$backend = tx_rsaauth_backendfactory::getBackend();
-			if (!is_null($backend)) {
+			if ($backend) {
+				$result[0] = 'tx_rsaauth_feencrypt(this);';
 
-				// Add javascript
 				$javascriptPath = t3lib_extMgm::siteRelPath('rsaauth') . 'resources/';
 				$files = array(
 					'jsbn/jsbn.js',
@@ -65,14 +64,10 @@ class tx_rsaauth_loginformhook {
 					'rsaauth_min.js'
 				);
 
-				$form = '';
 				foreach ($files as $file) {
-					$form .= '<script type="text/javascript" src="/' .
+					$result[1] .= '<script type="text/javascript" src="/' .
 						$javascriptPath . $file . '"></script>';
 				}
-
-				// Add form tag
-				$form .= '<form action="index.php" method="post" name="loginform" onsubmit="tx_rsaauth_encrypt();">';
 
 				// Generate a new key pair
 				$keyPair = $backend->createNewKeyPair();
@@ -83,16 +78,17 @@ class tx_rsaauth_loginformhook {
 				$storage->put($keyPair->getPrivateKey());
 
 				// Add RSA hidden fields
-				$form .= '<input type="hidden" id="rsa_n" name="n" value="' . htmlspecialchars($keyPair->getPublicKey()) . '" />';
-				$form .= '<input type="hidden" id="rsa_e" name="e" value="' . sprintf('%x', $keyPair->getExponent()) . '" />';
+				$result[1] .= '<input type="hidden" id="rsa_n" name="n" value="' . htmlspecialchars($keyPair->getPublicKey()) . '" />';
+				$result[1] .= '<input type="hidden" id="rsa_e" name="e" value="' . sprintf('%x', $keyPair->getExponent()) . '" />';
 			}
 		}
-		return $form;
+		return $result;
 	}
+
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rsaauth/hooks/class.tx_rsaauth_loginformhook.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rsaauth/hooks/class.tx_rsaauth_loginformhook.php']);
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rsaauth/hooks/class.tx_rsaauth_feloginhook.php'])	{
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rsaauth/hooks/class.tx_rsaauth_feloginhook.php']);
 }
 
 ?>
