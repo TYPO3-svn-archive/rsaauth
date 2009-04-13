@@ -39,8 +39,8 @@ Index: t3lib/class.t3lib_userauth.php
  			// set level to normal if not already set
 -		$this->security_level = $this->security_level ? $this->security_level : 'normal';
 +		if (!$this->security_level) {
-+			// Note: we use 'TYPO3_MODE' here because this is what $TYPO3_CONF_VARS uses
-+			$this->security_level = trim($TYPO3_CONF_VARS[TYPO3_MODE]['loginSecurityLevel']);
++			// Notice: cannot use TYPO3_MODE here because BE user can be logged in and operate inside FE!
++			$this->security_level = trim($TYPO3_CONF_VARS[$this->loginType]['loginSecurityLevel']);
 +			if (!$this->security_level) {
 +				$this->security_level = 'normal';
 +			}
@@ -60,24 +60,6 @@ Index: typo3/index.php
 ===================================================================
 --- typo3/index.php	(revision 5312)
 +++ typo3/index.php	(working copy)
-@@ -355,7 +355,7 @@
- 		if ($BE_USER->user['uid'] && ($this->commandLI || $this->loginRefresh || !$this->interfaceSelector))	{
- 
- 				// If no cookie has been set previously we tell people that this is a problem. This assumes that a cookie-setting script (like this one) has been hit at least once prior to this instance.
-- 			if (!$_COOKIE[$BE_USER->name])	{
-+			if (!$_COOKIE[$BE_USER->name])	{
- 				if ($this->commandLI=='setCookie') {
- 						// we tried it a second time but still no cookie
- 						// 26/4 2005: This does not work anymore, because the saving of challenge values in $_SESSION means the system will act as if the password was wrong.
-@@ -370,7 +370,7 @@
- 			if ($redirectToURL = (string)$BE_USER->getTSConfigVal('auth.BE.redirectToURL')) {
- 				$this->redirectToURL = $redirectToURL;
- 				$this->GPinterface = '';
-- 			}
-+			}
- 
- 				// store interface
- 			$BE_USER->uc['interfaceSetup'] = $this->GPinterface;
 @@ -589,21 +589,35 @@
  	function startForm()	{
  		$output = '';
@@ -116,13 +98,13 @@ Index: typo3/index.php
 +						if ($formCode) {
 +							$form = $formCode;
 +							break;
-+						}
+ 		}
 +					}
 +				}
-+
- 		}
  
 -		$output.= '
++		}
++
 +		$output.= $form . '
  					<input type="hidden" name="login_status" value="login" />
  				';
