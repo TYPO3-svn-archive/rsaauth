@@ -98,7 +98,6 @@ class tx_rsaauth_split_storage extends tx_rsaauth_abstract_storage {
 			$GLOBALS['TYPO3_DB']->exec_INSERTquery('tx_rsaauth_keys', array(
 				'pid' => 0,
 				'crdate' => $time,
-				'tstamp' => $time,
 				'key_value' => $keyPart2
 			));
 			$keyId = $GLOBALS['TYPO3_DB']->sql_insert_id();
