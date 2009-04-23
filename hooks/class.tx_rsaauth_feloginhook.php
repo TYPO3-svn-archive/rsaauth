@@ -65,7 +65,8 @@ class tx_rsaauth_feloginhook {
 				);
 
 				foreach ($files as $file) {
-					$result[1] .= '<script type="text/javascript" src="/' .
+					$result[1] .= '<script type="text/javascript" src="' .
+						t3lib_div::getIndpEnv('TYPO3_SITE_URL') .
 						$javascriptPath . $file . '"></script>';
 				}
 
