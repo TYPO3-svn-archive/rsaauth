@@ -41,6 +41,18 @@ require_once(t3lib_extMgm::extPath('rsaauth', 'sv1/storage/class.tx_rsaauth_abst
 class tx_rsaauth_split_storage extends tx_rsaauth_abstract_storage {
 
 	/**
+	 * Creates an instance of this class. It checks and initializes PHP
+	 * sessions if necessary.
+	 *
+	 * @return	void
+	 */
+	public function __construct() {
+		if (!isset($_SESSION) || !is_array($_SESSION)) {
+			session_start();
+		}
+	}
+
+	/**
 	 * Obtains a key from the database
 	 *
 	 * @return string	The key or null
