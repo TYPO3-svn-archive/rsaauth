@@ -67,7 +67,8 @@ class tx_rsaauth_loginformhook {
 
 				$form = '';
 				foreach ($files as $file) {
-					$form .= '<script type="text/javascript" src="/' .
+					$form .= '<script type="text/javascript" src="' .
+						t3lib_div::getIndpEnv('TYPO3_SITE_URL') .
 						$javascriptPath . $file . '"></script>';
 				}
 
