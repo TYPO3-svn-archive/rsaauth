@@ -46,7 +46,7 @@ class tx_rsaauth_loginformhook {
 	 *
 	 * @return	string	Form tag
 	 */
-	public function loginFormHook(array $params, SC_index& $pObj) {
+	public function getLoginFormTag(array $params, SC_index& $pObj) {
 		$form = null;
 		if ($pObj->loginSecurityLevel == 'rsa') {
 
@@ -54,26 +54,8 @@ class tx_rsaauth_loginformhook {
 			$backend = tx_rsaauth_backendfactory::getBackend();
 			if (!is_null($backend)) {
 
-				// Add javascript
-				$javascriptPath = t3lib_extMgm::siteRelPath('rsaauth') . 'resources/';
-				$files = array(
-					'jsbn/jsbn.js',
-					'jsbn/prng4.js',
-					'jsbn/rng.js',
-					'jsbn/rsa.js',
-					'jsbn/base64.js',
-					'rsaauth_min.js'
-				);
-
-				$form = '';
-				foreach ($files as $file) {
-					$form .= '<script type="text/javascript" src="' .
-						t3lib_div::getIndpEnv('TYPO3_SITE_URL') .
-						$javascriptPath . $file . '"></script>';
-				}
-
 				// Add form tag
-				$form .= '<form action="index.php" method="post" name="loginform" onsubmit="tx_rsaauth_encrypt();">';
+				$form = '<form action="index.php" method="post" name="loginform" onsubmit="tx_rsaauth_encrypt();">';
 
 				// Generate a new key pair
 				$keyPair = $backend->createNewKeyPair();
@@ -89,6 +71,39 @@ class tx_rsaauth_loginformhook {
 			}
 		}
 		return $form;
+	}
+
+
+	/**
+	 * Provides form code for the superchallenged authentication.
+	 *
+	 * @param	array	$params	Parameters to the script
+	 * @param	SC_index	$pObj	Calling object
+	 * @return	string	The code for the login form
+	 */
+	public function getLoginScripts(array $params, SC_index &$pObj) {
+		$content = '';
+
+		if ($pObj->loginSecurityLevel == 'rsa') {
+			$javascriptPath = t3lib_extMgm::siteRelPath('rsaauth') . 'resources/';
+			$files = array(
+				'jsbn/jsbn.js',
+				'jsbn/prng4.js',
+				'jsbn/rng.js',
+				'jsbn/rsa.js',
+				'jsbn/base64.js',
+				'rsaauth_min.js'
+			);
+
+			$content = '';
+			foreach ($files as $file) {
+				$content .= '<script type="text/javascript" src="' .
+					t3lib_div::getIndpEnv('TYPO3_SITE_URL') .
+					$javascriptPath . $file . '"></script>';
+			}
+		}
+
+		return $content;
 	}
 }
 

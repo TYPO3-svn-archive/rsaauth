@@ -1,6 +1,28 @@
+Index: t3lib/config_default.php
+===================================================================
+--- t3lib/config_default.php	(revision 5368)
++++ t3lib/config_default.php	(working copy)
+@@ -192,7 +192,7 @@
+ 		'lockSSL' => 0,							// Int. 0,1,2,3: If set (1,2,3), the backend can only be operated from an ssl-encrypted connection (https). Set to 2 you will be redirected to the https admin-url supposed to be the http-url, but with https scheme instead. If set to 3, only the login is forced to SSL, then the user switches back to non-SSL-mode
+ 		'lockSSLPort' => 0,					// Integer. Use a non-standard HTTPS port for lockSSL. Set this value if you use lockSSL and the HTTPS port of your webserver is not 443.
+ 		'enabledBeUserIPLock' => 1,				// Boolean. If set, the User/Group TSconfig option 'option.lockToIP' is enabled.
+-		'loginSecurityLevel' => '',				// String. Keywords that determines the security level of login to the backend. "normal" means the password from the login form is sent in clear-text, "challenged" means the password is not sent but hashed with some other values, "superchallenged" (default) means the password is first hashed before being hashed with the challenge values again (means the password is stored as a hashed string in the database also). DO NOT CHANGE this value manually; without an alternative authentication service it will only prevent logins in TYPO3 since the "superchallenged" method is hardcoded in the default authentication system.
++		'loginSecurityLevel' => '',				// String. Keywords that determines the security level of login to the backend. "normal" means the password from the login form is sent in clear-text, "challenged" means the password is not sent but hashed with some other values, "superchallenged" (default) means the password is first hashed before being hashed with the challenge values again (means the password is stored as a hashed string in the database also), "rsa" uses RSA password encryption (only if the rsaauth extension is installed). DO NOT CHANGE this value manually; without an alternative authentication service it will only prevent logins in TYPO3 since the "superchallenged" method is hardcoded in the default authentication system.
+ 		'adminOnly' => 0,						// Int. If set (>=1), the only "admin" users can log in to the backend. If "<=-1" then the backend is totally shut down! For maintenance purposes.
+ 		'disable_exec_function' => 0,			// Boolean. Don't use exec() function (except for ImageMagick which is disabled by [GFX][im]=0). If set, all fileoperations are done by the default PHP-functions. This is nescessary under Windows! On Unix the system commands by exec() can be used, unless this is disabled.
+ 		'usePHPFileFunctions' => 1,				// Boolean. If set, all fileoperations are done by the default PHP-functions. Default on Unix is using the system commands by exec(). You need to set this flag under safe_mode.
+@@ -287,7 +287,7 @@
+ 		'addRootLineFields' => '',				// Comma-list of fields from the 'pages'-table. These fields are added to the select query for fields in the rootline.
+ 		'checkFeUserPid' => 1,					// Boolean. If set, the pid of fe_user logins must be sent in the form as the field 'pid' and then the user must be located in the pid. If you unset this, you should change the fe_users.username eval-flag 'uniqueInPid' to 'unique' in $TCA. This will do: $TCA['fe_users']['columns']['username']['config']['eval']= 'nospace,lower,required,unique';
+ 		'lockIP' => 2,							// Integer (0-4). If >0, fe_users are locked to (a part of) their REMOTE_ADDR IP for their session. Enhances security but may throw off users that may change IP during their session (in which case you can lower it to 2 or 3). The integer indicates how many parts of the IP address to include in the check. Reducing to 1-3 means that only first, second or third part of the IP address is used. 4 is the FULL IP address and recommended. 0 (zero) disables checking of course.
+-		'loginSecurityLevel' => '',				// See description for TYPO3_CONF_VARS[BE][loginSecurityLevel]. Default state for frontend is "normal". Alternative authentication services can implement higher levels if preferred.
++		'loginSecurityLevel' => '',				// See description for TYPO3_CONF_VARS[BE][loginSecurityLevel]. Default state for frontend is "normal". Alternative authentication services can implement higher levels if preferred. For example, "rsa" level uses RSA password encryption (only if the rsaauth extension is installed)
+ 		'lifetime' => 0,						// Integer, positive. If >0, the cookie of FE users will have a lifetime of the number of seconds this value indicates. Otherwise it will be a session cookie (deleted when browser is shut down). Setting this value to 604800 will result in automatic login of FE users during a whole week, 86400 will keep the FE users logged in for a day.
+ 		'permalogin' => 2,						// Integer. -1: Permanent login for FE users disabled. 0: By default permalogin is disabled for FE users but can be enabled by a form control in the login form. 1: Permanent login is by default enabled but can be disabled by a form control in the login form. // 2: Permanent login is forced to be enabled.  // In any case, permanent login is only possible if TYPO3_CONF_VARS[FE][lifetime] lifetime is > 0.
+ 		'maxSessionDataSize' => 10000,			// Integer. Setting the maximum size (bytes) of frontend session data stored in the table fe_session_data. Set to zero (0) means no limit, but this is not recommended since it also disables a check that session data is stored only if a confirmed cookie is set.
 Index: t3lib/class.t3lib_beuserauth.php
 ===================================================================
---- t3lib/class.t3lib_beuserauth.php	(revision 5312)
+--- t3lib/class.t3lib_beuserauth.php	(revision 5368)
 +++ t3lib/class.t3lib_beuserauth.php	(working copy)
 @@ -96,7 +96,6 @@
  	var $formfield_uident = 'userident'; 		// formfield with password
@@ -31,7 +53,7 @@ Index: t3lib/class.t3lib_beuserauth.php
  	 *
 Index: t3lib/class.t3lib_userauth.php
 ===================================================================
---- t3lib/class.t3lib_userauth.php	(revision 5312)
+--- t3lib/class.t3lib_userauth.php	(revision 5368)
 +++ t3lib/class.t3lib_userauth.php	(working copy)
 @@ -199,7 +199,13 @@
  		$this->loginType = ($this->name=='fe_typo_user') ? 'FE' : 'BE';
@@ -58,9 +80,35 @@ Index: t3lib/class.t3lib_userauth.php
  	/**
 Index: typo3/index.php
 ===================================================================
---- typo3/index.php	(revision 5312)
+--- typo3/index.php	(revision 5368)
 +++ typo3/index.php	(working copy)
-@@ -589,21 +589,35 @@
+@@ -204,15 +204,11 @@
+ 			// Add login form:
+ 		$this->content.=$this->wrapLoginForm($loginForm);
+ 
+-			// Create a random challenge string
+-		$challenge = $this->getChallenge();
+-
+ 			// Save challenge value in session data (thanks to Bernhard Kraft for providing code):
+ 		session_start();
+-		$_SESSION['login_challenge'] = $challenge;
+ 
+ 			// Add hidden fields and end the page
+-		$this->content.= $this->getHiddenFields($challenge);
++		$this->content .= $this->getHiddenFields();
+ 
+ 		$this->content.= $TBE_TEMPLATE->endPage();
+ 	}
+@@ -370,7 +366,7 @@
+ 			if ($redirectToURL = (string)$BE_USER->getTSConfigVal('auth.BE.redirectToURL')) {
+ 				$this->redirectToURL = $redirectToURL;
+ 				$this->GPinterface = '';
+- 			}
++			}
+ 
+ 				// store interface
+ 			$BE_USER->uc['interfaceSetup'] = $this->GPinterface;
+@@ -589,21 +585,22 @@
  	function startForm()	{
  		$output = '';
  
@@ -76,36 +124,262 @@ Index: typo3/index.php
 -			$output.= '
 -				<form action="index.php" method="post" name="loginform" onsubmit="doChallengeResponse(1);">
 -				';
-+		// The form defaults to superchallenged
-+		$form = '<form action="index.php" method="post" name="loginform" onsubmit="doChallengeResponse(1);">';
-+		switch ($this->loginSecurityLevel) {
-+			case 'challenged':
-+				$form = '<form action="index.php" method="post" name="loginform" onsubmit="doChallengeResponse(0);">';
-+				break;
-+			case 'normal':
-+				$form = '<form action="index.php" method="post" name="loginform" onsubmit="document.loginform.userident.value=document.loginform.p_field.value;document.loginform.p_field.value=\'\';return true;">';
-+				break;
-+			case 'superchallenged':
-+			case '':
-+				// Do nothing. These cases only prevent us from falling to 'default'
-+				break;
-+			default:
-+				// Call hooks. If they do not return anything, we stay with superchallendged
-+				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/index.php']['loginFormHook'])) {
-+					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/index.php']['loginFormHook'] as $function) {
-+						$params = array();
-+						$formCode = t3lib_div::callUserFunction($function, $params, $this);
-+						if ($formCode) {
-+							$form = $formCode;
-+							break;
- 		}
-+					}
++		// The form defaults to normal. The 'sv' extension will add superchallenged.
++		$form = '<form action="index.php" method="post" name="loginform" onsubmit="document.loginform.userident.value=document.loginform.p_field.value;document.loginform.p_field.value=\'\';return true;">';
++
++		// Call hooks. If they do not return anything, we stay with superchallendged
++		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/index.php']['loginFormHook'])) {
++			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/index.php']['loginFormHook'] as $function) {
++				$params = array();
++				$formCode = t3lib_div::callUserFunction($function, $params, $this);
++				if ($formCode) {
++					$form = $formCode;
++					break;
 +				}
++			}
+ 		}
  
 -		$output.= '
-+		}
-+
-+		$output.= $form . '
++		$output .= $form . '
  					<input type="hidden" name="login_status" value="login" />
  				';
  
+@@ -613,13 +610,11 @@
+ 	/**
+ 	 * Output some hidden fields at the end of the login form
+ 	 *
+-	 * @param	string		The challenge string to be included in the output
+ 	 * @return	string		HTML output
+ 	 */
+-	function getHiddenFields($challenge)	{
++	function getHiddenFields() {
+ 		$output = '
+ 			<input type="hidden" name="userident" value="" />
+-			<input type="hidden" name="challenge" value="'.$challenge.'" />
+ 			<input type="hidden" name="redirect_url" value="'.htmlspecialchars($this->redirectToURL).'" />
+ 			<input type="hidden" name="loginRefresh" value="'.htmlspecialchars($this->loginRefresh).'" />
+ 			'.$this->interfaceSelector_hidden.'
+@@ -635,57 +630,19 @@
+ 	 * @return	string		JavaScript code
+ 	 */
+ 	function getJScode()	{
+-		global $TBE_TEMPLATE;
+-
+-		$JScode = '
+-			<script type="text/javascript" src="md5.js"></script>
+-			'.$TBE_TEMPLATE->wrapScriptTags('
+-				function doChallengeResponse(superchallenged) {	//
+-					password = document.loginform.p_field.value;
+-					if (password)	{
+-						if (superchallenged)	{
+-							password = MD5(password);	// this makes it superchallenged!!
+-						}
+-						str = document.loginform.username.value+":"+password+":"+document.loginform.challenge.value;
+-						document.loginform.userident.value = MD5(str);
+-						document.loginform.p_field.value = "";
+-						return true;
+-					}
++		$JSCode = '';
++		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/index.php']['loginScriptHook'])) {
++			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/index.php']['loginScriptHook'] as $function) {
++				$params = array();
++				$JSCode = t3lib_div::callUserFunction($function, $params, $this);
++				if ($JSCode) {
++					break;
+ 				}
++			}
++		}
+ 
+-				function startUp() {
+-						// If the login screen is shown in the login_frameset window for re-login, then try to get the username of the current/former login from opening windows main frame:
+-					if (parent.opener && parent.opener.TS && parent.opener.TS.username && document.loginform && document.loginform.username)	{
+-						document.loginform.username.value = parent.opener.TS.username;
+-					}
+-
+-						// Wait a few millisecons before calling checkFocus(). This might be necessary because some browsers need some time to auto-fill in the form fields
+-					window.setTimeout("checkFocus()", 50);
+-				}
+-
+-					// This moves focus to the right input field:
+-				function checkFocus() {
+-						// If for some reason there already is a username in the username form field, move focus to the password field:
+-					if (document.loginform.username && document.loginform.username.value == "") {
+-						document.loginform.username.focus();
+-					} else if (document.loginform.p_field && document.loginform.p_field.type!="hidden") {
+-						document.loginform.p_field.focus();
+-					}
+-				}
+-			');
+-
+-		return $JScode;
++		return $JSCode;
+ 	}
+-
+-	/**
+-	 * Create a random challenge string
+-	 *
+-	 * @return	string		Challenge value
+-	 */
+-	function getChallenge()	{
+-		$challenge = md5(uniqid('').getmypid());
+-		return $challenge;
+-	}
+ }
+ 
+ 
+Index: typo3/sysext/sv/ext_localconf.php
+===================================================================
+--- typo3/sysext/sv/ext_localconf.php	(revision 5368)
++++ typo3/sysext/sv/ext_localconf.php	(working copy)
+@@ -23,4 +23,8 @@
+ 		)
+ 	);
+ 
++// Add hooks to the backend login form
++$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/index.php']['loginFormHook'][$_EXTKEY] = 'EXT:' . $_EXTKEY . '/class.tx_sv_loginformhook.php:tx_sv_loginformhook->getLoginFormTag';
++$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/index.php']['loginScriptHook'][$_EXTKEY] = 'EXT:' . $_EXTKEY . '/class.tx_sv_loginformhook.php:tx_sv_loginformhook->getLoginScripts';
++
+ ?>
+\ No newline at end of file
+Index: typo3/sysext/sv/class.tx_sv_loginformhook.php
+===================================================================
+--- typo3/sysext/sv/class.tx_sv_loginformhook.php	(revision 0)
++++ typo3/sysext/sv/class.tx_sv_loginformhook.php	(revision 0)
+@@ -0,0 +1,136 @@
++<?php
++/***************************************************************
++*  Copyright notice
++*
++*  (c) 2009 Dmitry Dulepov <dmitry@typo3.org>
++*  All rights reserved
++*
++*  This script is part of the TYPO3 project. The TYPO3 project is
++*  free software; you can redistribute it and/or modify
++*  it under the terms of the GNU General Public License as published by
++*  the Free Software Foundation; either version 2 of the License, or
++*  (at your option) any later version.
++*
++*  The GNU General Public License can be found at
++*  http://www.gnu.org/copyleft/gpl.html.
++*
++*  This script is distributed in the hope that it will be useful,
++*  but WITHOUT ANY WARRANTY; without even the implied warranty of
++*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++*  GNU General Public License for more details.
++*
++*  This copyright notice MUST APPEAR in all copies of the script!
++***************************************************************/
++
++/**
++ * [CLASS/FUNCTION INDEX of SCRIPT]
++ *
++ * $Id: $
++ */
++
++
++/**
++ * This class contains a BE login form hook. It adds all necessary JavaScript
++ * for the superchallenged authentication.
++ *
++ * @author	Dmitry Dulepov <dmitry@typo3.org>
++ * @package	TYPO3
++ * @subpackage	tx_sv
++ */
++class tx_sv_loginformhook {
++
++	/**
++	 * Provides form code for the superchallenged authentication.
++	 *
++	 * @param	array	$params	Parameters to the script
++	 * @param	SC_index	$pObj	Calling object
++	 * @return	string	The code for the login form
++	 */
++	public function getLoginFormTag(array $params, SC_index &$pObj) {
++		$content = '';
++
++		switch ($pObj->loginSecurityLevel) {
++			case 'challenged':
++			case 'superchallenged':
++				$_SESSION['login_challenge'] = $this->getChallenge();
++				$content = '<form action="index.php" method="post" name="loginform" ' .
++					'onsubmit="doChallengeResponse(' .
++					($pObj->loginSecurityLevel == 'challenged' ? 0 : 1) . ');">' .
++					'<input type="hidden" name="challenge" value="' .
++					htmlspecialchars($_SESSION['login_challenge']) . '" />';
++				break;
++		}
++
++		return $content;
++	}
++
++	/**
++	 * Provides form code for the superchallenged authentication.
++	 *
++	 * @param	array	$params	Parameters to the script
++	 * @param	SC_index	$pObj	Calling object
++	 * @return	string	The code for the login form
++	 */
++	public function getLoginScripts(array $params, SC_index &$pObj) {
++		$content = '';
++
++		if ($pObj->loginSecurityLevel == 'superchallenged' ||
++				$pObj->loginSecurityLevel == 'challenged') {
++			$content = '
++				<script type="text/javascript" src="md5.js"></script>
++				' . $GLOBALS['TBE_TEMPLATE']->wrapScriptTags('
++					function doChallengeResponse(superchallenged) {	//
++						password = document.loginform.p_field.value;
++						if (password)	{
++							if (superchallenged)	{
++								password = MD5(password);	// this makes it superchallenged!!
++							}
++							str = document.loginform.username.value+":"+password+":"+document.loginform.challenge.value;
++							document.loginform.userident.value = MD5(str);
++							document.loginform.p_field.value = "";
++							return true;
++						}
++					}
++
++					function startUp() {
++							// If the login screen is shown in the login_frameset window for re-login, then try to get the username of the current/former login from opening windows main frame:
++						if (parent.opener && parent.opener.TS && parent.opener.TS.username && document.loginform && document.loginform.username)	{
++							document.loginform.username.value = parent.opener.TS.username;
++						}
++
++							// Wait a few millisecons before calling checkFocus(). This might be necessary because some browsers need some time to auto-fill in the form fields
++						window.setTimeout("checkFocus()", 50);
++					}
++
++						// This moves focus to the right input field:
++					function checkFocus() {
++							// If for some reason there already is a username in the username form field, move focus to the password field:
++						if (document.loginform.username && document.loginform.username.value == "") {
++							document.loginform.username.focus();
++						} else if (document.loginform.p_field && document.loginform.p_field.type!="hidden") {
++							document.loginform.p_field.focus();
++						}
++					}');
++		}
++
++		return $content;
++	}
++
++
++	/**
++	 * Create a random challenge string
++	 *
++	 * @return	string		Challenge value
++	 */
++	protected function getChallenge()	{
++		$challenge = md5(uniqid('') . getmypid());
++		return $challenge;
++	}
++
++}
++
++if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/sv/class.tx_sv_loginformhook.php'])	{
++	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/sv/class.tx_sv_loginformhook.php']);
++}
++
++?>
+\ No newline at end of file

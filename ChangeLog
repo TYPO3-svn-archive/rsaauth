@@ -6,6 +6,7 @@
 	* Fixed: wrong unserializaion of the extension configuration
 	* Added a configuration check and warnings in the backend if the check fails
 	* Added a warning if command line backend is used
+	* Move login JavaScript addition to a separate hook
 
 2009-04-13  Dmitry Dulepov  <dmitry@typo3.org>
 
