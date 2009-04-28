@@ -69,7 +69,7 @@ class tx_rsaauth_cmdline_backend extends tx_rsaauth_abstract_backend {
 		$this->temporaryDirectory = PATH_site . 'typo3temp';
 
 		// Get temporary directory from the configuration
-		$extconf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['temporaryDirectory']);
+		$extconf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['rsaauth']);
 		if ($extconf['temporaryDirectory'] != '' &&
 				$extconf['temporaryDirectory']{0} == '/' &&
 				@is_dir($extconf['temporaryDirectory']) &&
