@@ -4,6 +4,7 @@
 	* Do not use expired keys in the split storage
 	* Rename publicKey to publicKeyModulus in the keypair class
 	* Fixed: wrong unserializaion of the extension configuration
+	* Added a configuration check and warnings in the backend if the check fails
 
 2009-04-13  Dmitry Dulepov  <dmitry@typo3.org>
 
