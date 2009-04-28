@@ -44,7 +44,7 @@ class tx_rsaauth_storagefactory {
 	 * This is for security reasons to avoid inserting some dummy storage to
 	 * the list.
 	 *
-	 * @var	array
+	 * @var	string
 	 */
 	static protected $preferredStorage = 'EXT:rsaauth/sv1/storage/class.tx_rsaauth_split_storage.php:tx_rsaauth_split_storage';
 
@@ -71,6 +71,17 @@ class tx_rsaauth_storagefactory {
 			self::$storageInstance = t3lib_div::getUserObj(self::$preferredStorage);
 		}
 		return self::$storageInstance;
+	}
+
+	/**
+	 * Sets the preffered storage to the factory. This method can be called from
+	 * another extension or ext_localconf.php
+	 *
+	 * @param	string	$preferredStorage	Preffered storage
+	 * @return	void
+	 */
+	static public function setPreferredStorage($preferredStorage) {
+		self::$preferredStorage = $preferredStorage;
 	}
 }
 

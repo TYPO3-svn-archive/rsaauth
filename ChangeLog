@@ -1,3 +1,7 @@
+2009-04-28  Dmitry Dulepov  <dmitry@typo3.org>
+
+	* Added a method to set an alternative storage to the storage factory
+
 2009-04-13  Dmitry Dulepov  <dmitry@typo3.org>
 
 	* Added a "split" storage for keys
