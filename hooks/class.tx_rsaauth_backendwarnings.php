@@ -51,6 +51,10 @@ class tx_rsaauth_backendwarnings {
 	public function displayWarningMessages_postProcess(array &$warnings) {
 		$backend = tx_rsaauth_backendfactory::getBackend();
 		if ($backend instanceof tx_rsaauth_cmdline_backend) {
+
+			// Not using the PHP extension!
+			$warnings['rsaauth_cmdline'] = $GLOBALS['LANG']->sL('LLL:EXT:rsaauth/hooks/locallang.xml:hook_using_cmdline');
+
 			// Check the path
 			$extconf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['rsaauth']);
 			$path = trim($extconf['temporaryDirectory']);
