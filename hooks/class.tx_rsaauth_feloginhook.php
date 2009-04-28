@@ -79,7 +79,7 @@ class tx_rsaauth_feloginhook {
 				$storage->put($keyPair->getPrivateKey());
 
 				// Add RSA hidden fields
-				$result[1] .= '<input type="hidden" id="rsa_n" name="n" value="' . htmlspecialchars($keyPair->getPublicKey()) . '" />';
+				$result[1] .= '<input type="hidden" id="rsa_n" name="n" value="' . htmlspecialchars($keyPair->getPublicKeyModulus()) . '" />';
 				$result[1] .= '<input type="hidden" id="rsa_e" name="e" value="' . sprintf('%x', $keyPair->getExponent()) . '" />';
 			}
 		}

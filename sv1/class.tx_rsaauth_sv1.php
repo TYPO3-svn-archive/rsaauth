@@ -68,7 +68,7 @@ class tx_rsaauth_sv1 extends tx_sv_auth  {
 	public	$prefixId = 'tx_rsaauth_sv1';		// Same as class name
 
 	/**
-	 * Standard reated path for the service
+	 * Standard relative path for the service
 	 *
 	 * @var	string
 	 */

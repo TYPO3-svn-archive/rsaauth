@@ -54,11 +54,11 @@ final class tx_rsaauth_keypair {
 	protected	$privateKey = '';
 
 	/**
-	 * The public key
+	 * The public key modulus
 	 *
 	 * @var	string
 	 */
-	protected	$publicKey = '';
+	protected	$publicKeyModulus = '';
 
 	/**
 	 * Retrieves the exponent.
@@ -99,22 +99,22 @@ final class tx_rsaauth_keypair {
 	}
 
 	/**
-	 * Retrieves the public key
+	 * Retrieves the public key modulus
 	 *
-	 * @return	string	The public key
+	 * @return	string	The public key modulus
 	 */
-	public function getPublicKey() {
-		return $this->publicKey;
+	public function getPublicKeyModulus() {
+		return $this->publicKeyModulus;
 	}
 
 	/**
-	 * Sets the public key
+	 * Sets the public key modulus
 	 *
-	 * @param	string	$publicKey	The new public key
+	 * @param	string	$publicKeyModulus	The new public key modulus
 	 * @return	void
 	 */
-	public function setPublicKey($publicKey) {
-		$this->publicKey = $publicKey;
+	public function setPublicKey($publicKeyModulus) {
+		$this->publicKeyModulus = $publicKeyModulus;
 	}
 }
 

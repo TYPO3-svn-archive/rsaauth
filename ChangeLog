@@ -2,6 +2,7 @@
 
 	* Added a method to set an alternative storage to the storage factory
 	* Do not use expired keys in the split storage
+	* Rename publicKey to publicKeyModulus in the keypair class
 
 2009-04-13  Dmitry Dulepov  <dmitry@typo3.org>
 
