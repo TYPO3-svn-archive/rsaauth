@@ -1,3 +1,7 @@
+2009-04-30  Dmitry Dulepov  <dmitry@typo3.org>
+
+	* Increased service priority to make it run before t3sec_saltedpw
+
 2009-04-28  Dmitry Dulepov  <dmitry@typo3.org>
 
 	* Added a method to set an alternative storage to the storage factory

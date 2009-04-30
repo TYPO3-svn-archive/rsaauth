@@ -12,8 +12,8 @@ t3lib_extMgm::addService($_EXTKEY,  'auth' /* sv type */,  'tx_rsaauth_sv1' /* s
 		'subtype' => 'getUserBE,authUserBE,getUserFE,authUserFE',
 
 		'available' => TRUE,
-		'priority' => 55,	// tx_svauth_sv1 has 50. This service must have higher priority!
-		'quality' => 55,	// tx_svauth_sv1 has 50. This service must have higher quality!
+		'priority' => 60,	// tx_svauth_sv1 has 50, t3sec_saltedpw has 55. This service must have higher priority!
+		'quality' => 60,	// tx_svauth_sv1 has 50. This service must have higher quality!
 
 		'os' => '',
 		'exec' => '',		// Do not put a dependency on openssh here or service loading will fail!
